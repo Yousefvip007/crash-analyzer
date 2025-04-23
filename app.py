@@ -1,34 +1,47 @@
 import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
 
-def analyze_crash_data(crash_values):
-    if len(crash_values) < 5:
-        return "ادخل على الأقل 5 نتائج كراش للتحليل."
+st.set_page_config(page_title="تحليل لعبة Crash", layout="centered")
 
-    avg = sum(crash_values) / len(crash_values)
-    low_crashes = [x for x in crash_values if x < 1.5]
-    low_ratio = len(low_crashes) / len(crash_values)
+st.title("تحليل لعبة Crash 1xBet")
+st.write("تحليل مبسط للنتائج وتوصيات للعب القادم")
 
-    recommendation = "اسحب عند 1.8x أو أقل."
-    if low_ratio > 0.6:
-        recommendation = "احترس! نسبة الكراش السريع عالية، اسحب عند 1.3x أو أقل."
-    elif low_ratio < 0.3:
-        recommendation = "فرص جيدة للربح! ممكن تسحب عند 2.0x أو أكتر بحذر."
+# بيانات سابقة (مثال مبدأي)
+results = [1.1, 1.3, 1.2, 1.8, 1.6, 2.0, 1.7]
+rounds = list(range(1, len(results)+1))
 
-    result = f"""### التحليل:
-- **المتوسط:** {avg:.2f}
-- **نسبة الكراش تحت 1.5x:** {low_ratio*100:.1f}%
-- **التوصية:** {recommendation}
-"""
-    return result
+# توقع النتيجة القادمة باستخدام الانحدار الخطي
+model = LinearRegression()
+model.fit(np.array(rounds).reshape(-1,1), np.array(results))
+next_round = [[len(results) + 1]]
+prediction = model.predict(next_round)[0]
 
-st.title("أداة تحليل لعبة Crash")
+# رسم النتائج
+fig, ax = plt.subplots()
+ax.plot(rounds, results, marker='o', label='النتائج السابقة')
+ax.plot(len(results) + 1, prediction, 'ro', label='التوقع القادم')
+ax.set_xlabel("الجولة")
+ax.set_ylabel("الضرب")
+ax.legend()
+st.pyplot(fig)
 
-user_input = st.text_input("اكتب نتائج الكراش مفصولة بفواصل (مثال: 1.2, 2.1, 1.4, 1.8)")
+# عرض التوقع
+st.success(f"التوقع للجولة القادمة: {prediction:.2f}")
 
-if user_input:
-    try:
-        crash_values = [float(x.strip()) for x in user_input.split(",") if x.strip()]
-        result = analyze_crash_data(crash_values)
-        st.markdown(result)
-    except:
-        st.error("تأكد إنك كتبت الأرقام بشكل صحيح ومفصولة بفواصل.")
+# إحصائيات
+mean_result = np.mean(results)
+st.info(f"المتوسط: {mean_result:.2f}")
+st.info(f"أقصى نتيجة: {max(results):.2f}")
+st.info(f"أقل نتيجة: {min(results):.2f}")
+
+# توصية بسيطة
+if prediction > 2:
+    st.warning("احتمال كبير للهبوط! كن حذرًا.")
+elif prediction > 1.5:
+    st.success("فرصة جيدة للعب!")
+else:
+    st.info("الوضع متوسط. العب بحذر.")
+
+st.caption("تحليل تجريبي لأغراض تعليمية فقط")
