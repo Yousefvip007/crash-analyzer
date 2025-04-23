@@ -23,13 +23,12 @@ def analyze_crash_data(crash_values):
 
 st.title("أداة تحليل لعبة Crash")
 
-uploaded_file = st.file_uploader("ارفع ملف الكراش (CSV)", type=["csv"])
+user_input = st.text_input("اكتب نتائج الكراش مفصولة بفواصل (مثال: 1.2, 2.1, 1.4, 1.8)")
 
-if uploaded_file:
-    content = uploaded_file.read().decode("utf-8")
+if user_input:
     try:
-        crash_values = [float(x.strip()) for x in content.split(",") if x.strip()]
+        crash_values = [float(x.strip()) for x in user_input.split(",") if x.strip()]
         result = analyze_crash_data(crash_values)
         st.markdown(result)
     except:
-        st.error("تأكد من أن الملف يحتوي على أرقام مفصولة بفواصل فقط.")
+        st.error("تأكد إنك كتبت الأرقام بشكل صحيح ومفصولة بفواصل.")
